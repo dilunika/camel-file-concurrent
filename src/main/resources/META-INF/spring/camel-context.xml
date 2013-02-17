@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Configures the Camel Context-->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:camel="http://camel.apache.org/schema/spring"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+  <camel:camelContext xmlns="http://camel.apache.org/schema/spring">
+    
+    <camel:route>
+      <camel:from uri="file:src/data/inventory?noop=true"/>
+      <camel:split streaming="true" parallelProcessing="true">
+      	<camel:tokenize token="\n" />
+      	<camel:bean ref="inventoryService" method="transform" />
+      	<camel:to uri="direct:update" />
+      </camel:split>
+    </camel:route>
+    
+    <camel:route>
+    	<camel:from uri="direct:update" />
+    	<camel:bean ref="inventoryService" method="update" />
+    </camel:route>
+    
+  </camel:camelContext>
+  
+  <bean id="inventoryService" class="org.jkd.camel.concurrent.InventoryService" />
+
+</beans>
